@@ -130,7 +130,5 @@ dmypy.json
 
 .python_packages
 
-.idea
-.vscode
-
+.venv/
 secrets.py
