@@ -89,7 +89,7 @@ def conditionally_trigger(context, dag_run_obj):
         return dag_run_obj
 
 
-dag = DAG('url_processor_dag',
+dag = DAG('url_processor',
           schedule_interval='0 0 * * 0',
           description='Scrape website for newspaper',
           default_args=default_args,
@@ -101,7 +101,7 @@ with dag:
                                python_callable=url_processor)
     trigger = TriggerDagRunOperator(
         task_id='trigger_url_processor_operator',
-        trigger_dag_id="url_processor_dag",
+        trigger_dag_id="url_processor",
         python_callable=conditionally_trigger
     )
     trigger.set_upstream(processor)
