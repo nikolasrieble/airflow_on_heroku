@@ -1,7 +1,10 @@
 #!/bin/bash
 
 function setupHeroku {
-    heroku create airflow
+
+    local RandomNamePart
+    RandomNamePart=$(openssl rand -hex 8)
+    heroku create "airflow-$RandomNamePart"
 
     heroku addons:create heroku-postgresql:hobby-dev
 
