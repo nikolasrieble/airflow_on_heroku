@@ -105,3 +105,4 @@ with dag:
         python_callable=conditionally_trigger
     )
     trigger.set_upstream(processor)
+
