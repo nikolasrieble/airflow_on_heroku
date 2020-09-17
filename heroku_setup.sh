@@ -1,13 +1,8 @@
 #!/bin/bash
 
 function setupHeroku {
-    # creates new heroku app
-    local NEW_APP
-    NEW_APP=$(heroku create)
-    echo "$NEW_APP"
+    heroku create airflow
 
-
-    # adds the postgres addon as a database
     heroku addons:create heroku-postgresql:hobby-dev
 
     local DATABASE_CONN
