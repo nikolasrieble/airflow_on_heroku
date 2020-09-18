@@ -24,6 +24,8 @@ function setupHeroku {
 
     git push heroku master
 
+    heroku run airflow upgradedb
+
     heroku config:set AIRFLOW__WEBSERVER__AUTHENTICATE=True
     heroku config:set AIRFLOW__WEBSERVER__AUTH_BACKEND=airflow.contrib.auth.backends.password_auth
 
