@@ -2,6 +2,9 @@
 
 function setupHeroku {
 
+    # remove any existing heroku remote of this repo
+    git remote remove heroku
+
     local RandomNamePart
     RandomNamePart=$(openssl rand -hex 8)
     heroku create "airflow-$RandomNamePart"
@@ -20,6 +23,11 @@ function setupHeroku {
     heroku config:set AIRFLOW__CORE__FERNET_KEY="$FERNET_KEY"
 
     git push heroku master
+
+    heroku run airflow upgradedb
+
+    heroku config:set AIRFLOW__WEBSERVER__AUTHENTICATE=True
+    heroku config:set AIRFLOW__WEBSERVER__AUTH_BACKEND=airflow.contrib.auth.backends.password_auth
 
     heroku run "python initial_user_creation.py"
 
