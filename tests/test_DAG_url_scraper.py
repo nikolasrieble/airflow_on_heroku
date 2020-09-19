@@ -20,7 +20,7 @@ class Test(TestCase):
         # given
         db = MongoDb()
         db.myclient = mongomock.MongoClient()
-        db.myclient["TODO"]["TODO"].insert({"scraped": 1, "id": 1})
+        db.myclient["TODO"]["TODO"].insert_one({"scraped": 1, "id": 1})
         # when
         task = db.get_open_task()
         # then
@@ -32,7 +32,7 @@ class Test(TestCase):
         db.myclient = mongomock.MongoClient()
 
         open_task = {"scraped": 0, "id": 1}
-        open_task['_id'] = db.myclient["TODO"]["TODO"].insert(open_task)
+        open_task['_id'] = db.myclient["TODO"]["TODO"].insert_one(open_task).inserted_id
         # when
         task = db.get_open_task()
         # then
