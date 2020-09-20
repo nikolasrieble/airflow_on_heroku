@@ -10,9 +10,7 @@ class MongoDb:
 
     def insert_article(self, data: dict, language):
         collection = self._database[language]
-        # TODO include other fields in duplicate check - duplicate title only should be allowed
-        if collection.count_documents({'title': data["title"]}) == 0:
-            collection.insert_one(data)
+        collection.update_one(data, {"$set": data}, upsert=True)
 
     def insert_tasks(self, tasks):
         collection = self._get_task_collection()
