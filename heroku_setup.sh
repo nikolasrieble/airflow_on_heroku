@@ -29,6 +29,8 @@ function setupHeroku {
     heroku config:set AIRFLOW__WEBSERVER__AUTHENTICATE=True
     heroku config:set AIRFLOW__WEBSERVER__AUTH_BACKEND=airflow.contrib.auth.backends.password_auth
 
+    heroku config:set MONGO_DB= "HERE ADD YOUR MONGO DB CONNECTION STRING"
+
     heroku run "python initial_user_creation.py"
 
     heroku run "rm initial_user_creation.py"

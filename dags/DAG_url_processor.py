@@ -6,17 +6,8 @@ from airflow.operators.python_operator import PythonOperator
 from newspaper import Article
 from newspaper import ArticleException
 
+from default import default_args
 from mongo_utils import MongoDb
-
-default_args = {
-    'owner': 'niko_huy',
-    'start_date': datetime.datetime(2020, 2, 18),
-    'provide_context': True,
-    'retries': 1,
-    'retry_delay': datetime.timedelta(minutes=5),
-    'execution_timeout': datetime.timedelta(minutes=60),
-    'pool': 'default_pool'
-}
 
 
 def url_processor(**context):
@@ -24,32 +15,31 @@ def url_processor(**context):
     target = database.get_open_task()
 
     if target is not None:
+        data = extract_data(target["url"])
 
-        article = Article(target["url"])
-
-        try:
-            article.download()
-            article.parse()
-
-            data = extract_data(article)
-
+        if data is not None:
             database.insert_article(data, language=target["language"])
             database.set_task_solved(target)
 
-        except ArticleException:
-            print('article could not be scraped from url {}'.format(article.url))
 
+def extract_data(url):
+    try:
+        article = Article(url)
+        article.download()
+        article.parse()
 
-def extract_data(article):
-    return {
-        'published_at': article.publish_date,
-        'text': article.text,
-        'authors': list(article.authors),
-        'title': article.title,
-        'url': article.url,
-        'tags': list(article.tags),
-        'fetched_at':datetime.datetime.now()
-    }
+        return {
+            'published_at': article.publish_date,
+            'text': article.text,
+            'authors': list(article.authors),
+            'title': article.title,
+            'url': article.url,
+            'tags': list(article.tags),
+            'fetched_at': datetime.datetime.now()
+        }
+    except ArticleException:
+        print('article could not be scraped from url {}'.format(url))
+        return None
 
 
 def conditionally_trigger(context, dag_run_obj):
