@@ -15,28 +15,31 @@ def url_processor(**context):
     target = database.get_open_task()
 
     if target is not None:
-        try:
-            data = extract_data(target["url"])
+        data = extract_data(target["url"])
+
+        if data is not None:
             database.insert_article(data, language=target["language"])
             database.set_task_solved(target)
-        except ArticleException:
-            print('article could not be scraped from url {}'.format(article.url))
 
 
 def extract_data(url):
-    article = Article(url)
-    article.download()
-    article.parse()
+    try:
+        article = Article(url)
+        article.download()
+        article.parse()
 
-    return {
-        'published_at': article.publish_date,
-        'text': article.text,
-        'authors': list(article.authors),
-        'title': article.title,
-        'url': article.url,
-        'tags': list(article.tags),
-        'fetched_at': datetime.datetime.now()
-    }
+        return {
+            'published_at': article.publish_date,
+            'text': article.text,
+            'authors': list(article.authors),
+            'title': article.title,
+            'url': article.url,
+            'tags': list(article.tags),
+            'fetched_at': datetime.datetime.now()
+        }
+    except ArticleException:
+        print('article could not be scraped from url {}'.format(url))
+        return None
 
 
 def conditionally_trigger(context, dag_run_obj):
