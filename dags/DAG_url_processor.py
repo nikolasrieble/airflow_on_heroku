@@ -1,12 +1,12 @@
-from newspaper import Article
-import pymongo
+import datetime
+
 from airflow.models import DAG
 from airflow.operators.dagrun_operator import TriggerDagRunOperator
 from airflow.operators.python_operator import PythonOperator
-import datetime
-import os
-
+from newspaper import Article
 from newspaper import ArticleException
+
+from mongo_utils import MongoDb
 
 default_args = {
     'owner': 'niko_huy',
@@ -20,56 +20,24 @@ default_args = {
 
 
 def url_processor(**context):
+    database = MongoDb()
+    target = database.get_open_task()
 
-    myclient = get_db_client()
+    if target is not None:
 
-    timestamp = datetime.datetime.now()
-    target_dict = get_article_to_scrape(myclient)
-
-    if target_dict is not None:
-        article = Article(target_dict["url"])
+        article = Article(target["url"])
 
         try:
             article.download()
             article.parse()
 
             data = extract_data(article)
-            data["fetched_at"] = timestamp
 
-            collection = get_collection(myclient, target_dict["language"])
-            # prevent duplicates
-            if collection.count_documents({'headline': article.title}) == 0:
-                collection.insert_one(data)
-
-            update_todo_list(myclient, target_dict)
+            database.insert(data, language=target["language"])
+            database.set_task_solved(target)
 
         except ArticleException:
             print('article could not be scraped from url {}'.format(article.url))
-
-
-def update_todo_list(myclient, target_dict):
-    mydb = myclient['TODO']
-    db = mydb['TODO']
-    return db.update_one({'url': target_dict['url']}, {'$set': {'scraped': 1}}, upsert=False)
-
-
-def get_db_client():
-    mongodb_string = os.environ.get('MONGO_DB')
-    assert mongodb_string
-    myclient = pymongo.MongoClient(mongodb_string)
-    return myclient
-
-
-def get_article_to_scrape(myclient):
-    mydb = myclient['TODO']
-    db = mydb['TODO']
-    return db.find_one({'scraped': 0})
-
-
-def get_collection(myclient, language):
-    mydb = myclient['newspaper']
-    collection = mydb[language]
-    return collection
 
 
 def extract_data(article):
@@ -79,18 +47,20 @@ def extract_data(article):
         'authors': list(article.authors),
         'title': article.title,
         'url': article.url,
-        'tags': list(article.tags)
+        'tags': list(article.tags),
+        'fetched_at':datetime.datetime.now()
     }
 
 
 def conditionally_trigger(context, dag_run_obj):
-    myclient = get_db_client()
-    if get_article_to_scrape(myclient) is not None:
+    database = MongoDb()
+    target = database.get_open_task()
+    if target is not None:
         return dag_run_obj
 
 
 dag = DAG('url_processor',
-          schedule_interval='0 0 * * 0',
+          schedule_interval='0 0 * * *',
           description='Scrape website for newspaper',
           default_args=default_args,
           catchup=False,
@@ -105,4 +75,3 @@ with dag:
         python_callable=conditionally_trigger
     )
     trigger.set_upstream(processor)
-
