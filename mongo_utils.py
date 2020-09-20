@@ -14,6 +14,10 @@ class MongoDb:
         if collection.count_documents({'title': data["title"]}) == 0:
             collection.insert_one(data)
 
+    def insert_tasks(self, tasks):
+        collection = self._get_task_collection()
+        return collection.insert_many(tasks)
+
     def get_open_task(self):
         collection = self._get_task_collection()
         return collection.find_one({'scraped': 0})
