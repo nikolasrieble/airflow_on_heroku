@@ -1,12 +1,10 @@
+import datetime
+
 import newspaper
-import pymongo
 from airflow.models import DAG
 from airflow.operators.python_operator import PythonOperator
-import datetime
-import os
-import psutil
 
-from newspaper import ArticleException
+from mongo_utils import MongoDb
 
 default_args = {
     'owner': 'niko_huy',
@@ -15,10 +13,7 @@ default_args = {
     'retries': 1,
     'retry_delay': datetime.timedelta(minutes=5),
     'execution_timeout': datetime.timedelta(minutes=60),
-    'pool': 'default_pool',
-    'templates_dict': {
-        'mongodb_string': os.environ.get('MONGO_DB'),
-    }
+    'pool': 'default_pool'
 }
 
 input_list = {
@@ -27,8 +22,15 @@ input_list = {
 }
 
 
-def url_scraper(templates_dict, language, **context):
-    collection = get_collection(templates_dict)
+def create_task(article, language):
+    return {'url': article.url,
+            'scraped': 0,
+            'language': language}
+
+
+def url_scraper(language, **context):
+    database = MongoDb()
+
     newspaper_url = input_list.get(language)
 
     paper = newspaper.build(newspaper_url,
@@ -37,25 +39,12 @@ def url_scraper(templates_dict, language, **context):
                             fetch_images=False,
                             MIN_WORD_COUNT=100)
 
-    for article in paper.articles:
-        # prevent duplicates
-        if collection.count_documents({'url': article.url}) == 0:
-            collection.insert_one({'url': article.url,
-                                   'scraped': 0,
-                                   'language':language})
-
-
-def get_collection(templates_dict):
-    mongodb_string = templates_dict.get('mongodb_string')
-    assert mongodb_string
-    myclient = pymongo.MongoClient(mongodb_string)
-    mydb = myclient['TODO']
-    collection = mydb['TODO']
-    return collection
+    tasks = [create_task(article, language) for article in paper.articles]
+    database.insert_tasks(tasks)
 
 
 dag = DAG('url_scraper',
-          schedule_interval='0 0 * * 0',
+          schedule_interval='0 0 * * *',
           description=f'''Scrape website for newspaper''',
           default_args=default_args,
           catchup=False,
