@@ -37,3 +37,31 @@ class Test(TestCase):
         task = db.get_open_task()
         # then
         assert task == open_task
+
+    def test_insert_into_empty_db(self):
+        # given
+        db = MongoDb()
+        db.myclient = mongomock.MongoClient()
+        expected_article = {"title": "How Millennials Are Disrupting Test"}
+
+        # when
+        db.insert(expected_article, "LANGUAGE")
+
+        # then
+        actual_article = db.myclient["newspaper"]["LANGUAGE"].find_one({})
+        assert actual_article["title"] == expected_article["title"]
+
+    def test_insert_does_not_create_duplicate(self):
+        # given
+        db = MongoDb()
+        db.myclient = mongomock.MongoClient()
+        existing_article = {"title": "How Millennials Are Disrupting Test"}
+        existing_article["_id"] = db.myclient["newspaper"]["LANGUAGE"].insert_one(existing_article).inserted_id
+
+        # when
+        db.insert(existing_article, "LANGUAGE")
+
+        # then
+        article_count = db.myclient["newspaper"]["LANGUAGE"].count_documents({})
+        assert article_count == 1
+

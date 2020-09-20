@@ -77,7 +77,7 @@ def extract_data(article):
         'published_at': article.publish_date,
         'text': article.text,
         'authors': list(article.authors),
-        'headline': article.title,
+        'title': article.title,
         'url': article.url,
         'tags': list(article.tags)
     }

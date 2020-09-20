@@ -1,17 +1,19 @@
 import os
 import pymongo
 
+
 class MongoDb:
 
     def __init__(self):
         mongodb_string = os.environ.get('MONGO_DB')
-        self.myclient =  pymongo.MongoClient(mongodb_string)
+        self.myclient = pymongo.MongoClient(mongodb_string)
 
     def insert(self, data: dict, language):
         mydb = self.myclient['newspaper']
         collection = mydb[language]
         # prevent duplicates
-        if collection.count_documents({'headline': data["title"]}) == 0:
+        # TODO include other fields in duplicate check - duplicate title only should be allowed
+        if collection.count_documents({'title': data["title"]}) == 0:
             collection.insert_one(data)
 
     def get_open_task(self):
