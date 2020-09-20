@@ -1,5 +1,4 @@
 import datetime
-import os
 
 import newspaper
 from airflow.models import DAG
@@ -14,10 +13,7 @@ default_args = {
     'retries': 1,
     'retry_delay': datetime.timedelta(minutes=5),
     'execution_timeout': datetime.timedelta(minutes=60),
-    'pool': 'default_pool',
-    'templates_dict': {
-        'mongodb_string': os.environ.get('MONGO_DB'),
-    }
+    'pool': 'default_pool'
 }
 
 input_list = {
@@ -32,7 +28,7 @@ def create_task(article, language):
             'language': language}
 
 
-def url_scraper(templates_dict, language, **context):
+def url_scraper(language, **context):
     database = MongoDb()
 
     newspaper_url = input_list.get(language)
@@ -48,7 +44,7 @@ def url_scraper(templates_dict, language, **context):
 
 
 dag = DAG('url_scraper',
-          schedule_interval='0 0 * * 0',
+          schedule_interval='0 0 * * *',
           description=f'''Scrape website for newspaper''',
           default_args=default_args,
           catchup=False,
