@@ -14,7 +14,8 @@ class MongoDb:
 
     def insert_tasks(self, tasks):
         collection = self._get_task_collection()
-        return collection.insert_many(tasks)
+        for task in tasks:
+            collection.update_one(task, {"$set": task}, upsert=True)
 
     def get_open_task(self):
         collection = self._get_task_collection()
