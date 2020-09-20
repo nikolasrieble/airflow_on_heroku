@@ -8,7 +8,7 @@ class MongoDb:
         mongodb_string = os.environ.get('MONGO_DB')
         self._database = pymongo.MongoClient(mongodb_string)['newspaper']
 
-    def insert(self, data: dict, language):
+    def insert_article(self, data: dict, language):
         collection = self._database[language]
         # TODO include other fields in duplicate check - duplicate title only should be allowed
         if collection.count_documents({'title': data["title"]}) == 0:

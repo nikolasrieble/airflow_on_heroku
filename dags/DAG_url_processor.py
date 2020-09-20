@@ -33,7 +33,7 @@ def url_processor(**context):
 
             data = extract_data(article)
 
-            database.insert(data, language=target["language"])
+            database.insert_article(data, language=target["language"])
             database.set_task_solved(target)
 
         except ArticleException:

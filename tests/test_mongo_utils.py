@@ -50,7 +50,7 @@ class Test(TestCase):
         expected_article = {"title": "How Millennials Are Disrupting Test"}
 
         # when
-        mongo_database.insert(expected_article, "LANGUAGE")
+        mongo_database.insert_article(expected_article, "LANGUAGE")
 
         # then
         actual_article = mongo_database._database["LANGUAGE"].find_one({})
@@ -65,7 +65,7 @@ class Test(TestCase):
             existing_article).inserted_id
 
         # when
-        mongo_database.insert(existing_article, "LANGUAGE")
+        mongo_database.insert_article(existing_article, "LANGUAGE")
 
         # then
         article_count = mongo_database._database["newspaper"]["LANGUAGE"].count_documents({})
