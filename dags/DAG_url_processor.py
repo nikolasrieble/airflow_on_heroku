@@ -15,23 +15,19 @@ def url_processor(**context):
     target = database.get_open_task()
 
     if target is not None:
-
-        article = Article(target["url"])
-
         try:
-            article.download()
-            article.parse()
-
-            data = extract_data(article)
-
+            data = extract_data(target["url"])
             database.insert_article(data, language=target["language"])
             database.set_task_solved(target)
-
         except ArticleException:
             print('article could not be scraped from url {}'.format(article.url))
 
 
-def extract_data(article):
+def extract_data(url):
+    article = Article(url)
+    article.download()
+    article.parse()
+
     return {
         'published_at': article.publish_date,
         'text': article.text,
