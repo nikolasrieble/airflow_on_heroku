@@ -1,12 +1,9 @@
-import newspaper
-import pymongo
-from airflow.models import DAG
-from airflow.operators.python_operator import PythonOperator
 import datetime
 import os
-import psutil
 
-from newspaper import ArticleException
+import newspaper
+from airflow.models import DAG
+from airflow.operators.python_operator import PythonOperator
 
 default_args = {
     'owner': 'niko_huy',
@@ -42,7 +39,7 @@ def url_scraper(templates_dict, language, **context):
         if collection.count_documents({'url': article.url}) == 0:
             collection.insert_one({'url': article.url,
                                    'scraped': 0,
-                                   'language':language})
+                                   'language': language})
 
 
 def get_collection(templates_dict):
