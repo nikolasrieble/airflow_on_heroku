@@ -99,3 +99,4 @@ urllib3==1.25.10
 Werkzeug==0.16.1
 WTForms==2.3.3
 zope.deprecation==4.4.0
+psycopg2==2.8.6
