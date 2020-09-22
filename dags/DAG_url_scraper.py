@@ -5,11 +5,6 @@ from airflow.operators.python_operator import PythonOperator
 from default import default_args
 from mongo_utils import MongoDb
 
-input_list = {
-    'tr': 'https://www.sozcu.com.tr/',
-    'de': 'https://www.faz.net/',
-}
-
 
 def create_task(article, language):
     return {'url': article.url,
