@@ -25,5 +25,15 @@ class MongoDb:
         collection = self._get_task_collection()
         return collection.update_one({'url': task['url']}, {'$set': {'scraped': 1}}, upsert=False)
 
+    def get_target_urls(self, language):
+        collection = self._get_target_collection()
+        result = collection.find({'language': language})
+        if result.count() == 0:
+            return []
+        return [i['url'] for i in result]
+
     def _get_task_collection(self):
         return self._database['TODO']
+
+    def _get_target_collection(self):
+        return self._database['TARGET']
