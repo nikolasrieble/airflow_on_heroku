@@ -1,4 +1,5 @@
 import datetime
+import logging
 
 from airflow.models import DAG
 from airflow.operators.dagrun_operator import TriggerDagRunOperator
@@ -9,17 +10,28 @@ from newspaper import ArticleException
 from default import default_args
 from mongo_utils import MongoDb
 
+logger = logging.getLogger("airflow.task")
 
 def url_processor(**context):
     database = MongoDb()
     target = database.get_open_task()
 
-    if target is not None:
-        data = extract_data(target["url"])
+    if target is None:
+        logger.info('No task left')
 
-        if data is not None:
+    else:
+        url = target["url"]
+        logger.info('Extracting data from {}'.format(url))
+        data = extract_data(url)
+
+        if data is None:
+            logger.info('No data could be extracted from {}'.format(url))
+        else:
+            logger.info('Upserting data for {}'.format(data["title"]))
             database.insert_article(data, language=target["language"])
             database.set_task_solved(target)
+
+
 
 
 def extract_data(url):
