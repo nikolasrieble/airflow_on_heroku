@@ -85,3 +85,28 @@ class Test(TestCase):
         actual_task = mongo_database._database["TODO"].find_one({"url": "www.google.com"})
         assert actual_task["url"] == open_task["url"]
         assert actual_task["scraped"] == 1
+
+    def test_get_target_url(self):
+        # given
+        mongo_database = MongoDb()
+        mongo_database._database = mongomock.MongoClient()["newspaper"]
+        target_1 = {'language': 'de', 'url': 'www.news1.de'}
+        mongo_database._database["TARGET"].insert_one(target_1)
+        target_1 = {'language': 'de', 'url': 'www.news2.de'}
+        mongo_database._database["TARGET"].insert_one(target_1)
+
+        # when
+        targets = mongo_database.get_target_urls('de')
+
+        # then
+
+        assert len(targets) == 2
+        assert 'www.news2.de' in targets
+        assert 'www.news1.de' in targets
+
+    def test_get_target_url_does_not_throw_if_empty_if_collection_does_not_exist(self):
+        # given
+        mongo_database = MongoDb()
+        mongo_database._database = mongomock.MongoClient()["newspaper"]
+        # when
+        mongo_database.get_target_urls('de')
