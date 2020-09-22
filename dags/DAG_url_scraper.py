@@ -20,16 +20,17 @@ def create_task(article, language):
 def url_scraper(language, **context):
     database = MongoDb()
 
-    newspaper_url = input_list.get(language)
+    newspaper_url = database.get_target_urls(language)
 
-    paper = newspaper.build(newspaper_url,
+    for url in newspaper_url:
+        paper = newspaper.build(url,
                             language=language,
                             memoize_articles=False,
                             fetch_images=False,
                             MIN_WORD_COUNT=100)
 
-    tasks = [create_task(article, language) for article in paper.articles]
-    database.insert_tasks(tasks)
+        tasks = [create_task(article, language) for article in paper.articles]
+        database.insert_tasks(tasks)
 
 
 dag = DAG('url_scraper',
