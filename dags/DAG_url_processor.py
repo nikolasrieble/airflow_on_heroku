@@ -30,7 +30,8 @@ def url_processor(**context):
         else:
             logger.info('Upserting data for {}'.format(data["title"]))
             database.insert_article(data, language=target["language"])
-            database.set_task_solved(target)
+
+        database.set_task_solved(target)
 
 
 def extract_data(url):
