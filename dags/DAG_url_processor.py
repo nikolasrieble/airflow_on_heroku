@@ -12,6 +12,7 @@ from mongo_utils import MongoDb
 
 logger = logging.getLogger("airflow.task")
 
+
 def url_processor(**context):
     database = MongoDb()
     target = database.get_open_task()
@@ -30,8 +31,6 @@ def url_processor(**context):
             logger.info('Upserting data for {}'.format(data["title"]))
             database.insert_article(data, language=target["language"])
             database.set_task_solved(target)
-
-
 
 
 def extract_data(url):
