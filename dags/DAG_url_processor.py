@@ -2,7 +2,6 @@ import datetime
 import logging
 
 from airflow.models import DAG
-from airflow.operators.dagrun_operator import TriggerDagRunOperator
 from airflow.operators.python_operator import PythonOperator
 from newspaper import Article
 from newspaper import ArticleException
@@ -30,7 +29,6 @@ def url_processor(**context):
         else:
             logger.info('Upserting data for {}'.format(data["title"]))
             database.insert_article(data, language=target["language"])
-
         database.set_task_solved(target)
 
 
@@ -54,15 +52,8 @@ def extract_data(url):
         return None
 
 
-def conditionally_trigger(context, dag_run_obj):
-    database = MongoDb()
-    target = database.get_open_task()
-    if target is not None:
-        return dag_run_obj
-
-
 dag = DAG('url_processor',
-          schedule_interval='0 0 * * *',
+          schedule_interval='* * * * *',
           description='Scrape website for newspaper',
           default_args=default_args,
           catchup=False,
@@ -71,9 +62,3 @@ dag = DAG('url_processor',
 with dag:
     processor = PythonOperator(task_id='url_processor_operator',
                                python_callable=url_processor)
-    trigger = TriggerDagRunOperator(
-        task_id='trigger_url_processor_operator',
-        trigger_dag_id="url_processor",
-        python_callable=conditionally_trigger
-    )
-    trigger.set_upstream(processor)
