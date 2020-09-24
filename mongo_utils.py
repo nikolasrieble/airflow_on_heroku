@@ -12,28 +12,18 @@ class MongoDb:
         collection = self._database[language]
         collection.update_one(data, {"$set": data}, upsert=True)
 
-    def insert_tasks(self, tasks):
-        collection = self._get_task_collection()
+    def insert_tasks(self, tasks, language):
+        collection = self._database[language]
         for task in tasks:
-            collection.update_one(task, {"$set": task}, upsert=True)
+            collection.update_one({"url": task["url"]}, {"$set": task}, upsert=True)
 
-    def get_open_task(self):
-        collection = self._get_task_collection()
-        return collection.find_one({'scraped': 0})
-
-    def set_task_solved(self, task):
-        collection = self._get_task_collection()
-        return collection.update_one({'url': task['url']}, {'$set': {'scraped': 1}}, upsert=False)
+    def get_open_task(self, language):
+        collection = self._database[language]
+        return collection.find_one({"text": {"$exists": False}})
 
     def get_target_urls(self, language):
-        collection = self._get_target_collection()
+        collection = self._database["TARGET"]
         result = collection.find({'language': language})
         if result.count() == 0:
             return []
         return [i['url'] for i in result]
-
-    def _get_task_collection(self):
-        return self._database['TODO']
-
-    def _get_target_collection(self):
-        return self._database['TARGET']
