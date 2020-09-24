@@ -21,11 +21,11 @@ def url_processor(language, **context):
 
     else:
         url = target["url"]
-
         logger.info('Extracting data from {}'.format(url))
+
         data = extract_data(url)
 
-        logger.info('Upserting data for {}'.format(data["title"]))
+        logger.info('Upserting data')
         database.insert_article(data, language=language)
 
 
