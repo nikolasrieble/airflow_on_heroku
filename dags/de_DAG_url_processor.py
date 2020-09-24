@@ -48,7 +48,8 @@ def extract_data(url):
         logger.info('No data could be extracted from {}'.format(url))
         return {
             'url': url,
-            'text': "Could not be fetched"
+            'text': "Could not be fetched",
+            'title': "Could not be fetched"
         }
 
 
