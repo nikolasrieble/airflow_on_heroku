@@ -110,3 +110,24 @@ class Test(TestCase):
         mongo_database._database = mongomock.MongoClient()["newspaper"]
         # when
         mongo_database.get_target_urls('de')
+
+    def test_insert_tasks_does_not_reinsert_solved_task(self):
+        # given
+        mongo_database = MongoDb()
+        mongo_database._database = mongomock.MongoClient()["newspaper"]
+
+        mongo_database._database["TODO"].insert_one({'url': 'www.bike.com',
+                                                     'scraped': 1,
+                                                     'language': 'tr'})
+        # when
+        mongo_database.insert_tasks([
+            {'url': 'www.bike.com',
+             'scraped': 0,
+             'language': 'tr'}
+        ])
+
+        # then
+        total = [i for i in mongo_database._database["TODO"].find({'url': 'www.bike.com'})]
+
+        assert total[0]["scraped"] == 1
+        assert total == 1
