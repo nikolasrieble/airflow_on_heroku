@@ -112,3 +112,22 @@ class Test(TestCase):
 
         assert total[0]["text"] == "this article is scraped"
         assert len(total) == 1
+
+    def test_insert_data_overwrites_task_entry(self):
+        # given
+        mongo_database = MongoDb()
+        mongo_database._database = mongomock.MongoClient()["newspaper"]
+
+        mongo_database._database["tr"].insert_one({'url': 'www.bike.com'})
+        # when
+
+        mongo_database.insert_article({
+            'url': 'www.bike.com',
+            'text': 'This article is scraped'
+        }, "tr")
+
+        # then
+        total = [i for i in mongo_database._database["tr"].find({'url': 'www.bike.com'})]
+
+        assert total[0]["text"] == "this article is scraped"
+        assert len(total) == 1
