@@ -102,10 +102,9 @@ class Test(TestCase):
         mongo_database._database = mongomock.MongoClient()["newspaper"]
 
         mongo_database._database["tr"].insert_one({'url': 'www.bike.com',
-                                                   'text': "this article is scraped",
-                                                   'language': 'tr'})
+                                                   'text': "this article is scraped"})
         # when
-        mongo_database.insert_tasks([{'url': 'www.bike.com', 'language': 'tr'}],
+        mongo_database.insert_tasks([{'url': 'www.bike.com'}],
                                     "tr")
 
         # then
