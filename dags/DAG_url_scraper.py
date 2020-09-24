@@ -1,18 +1,13 @@
+import logging
+
 import newspaper
 from airflow.models import DAG
 from airflow.operators.python_operator import PythonOperator
 
 from default import default_args
 from mongo_utils import MongoDb
-import logging
 
 logger = logging.getLogger("airflow.task")
-
-
-def create_task(article, language):
-    return {'url': article.url,
-            'scraped': 0,
-            'language': language}
 
 
 def url_scraper(language, **context):
@@ -29,10 +24,10 @@ def url_scraper(language, **context):
                                 MIN_WORD_COUNT=100)
 
         logger.info('Creating tasks for {}'.format(url))
-        tasks = [create_task(article, language) for article in paper.articles]
+        tasks = [{'url': article.url} for article in paper.articles]
 
         logger.info('Inserting tasks for {}'.format(url))
-        database.insert_tasks(tasks)
+        database.insert_tasks(tasks, language)
 
 
 dag = DAG('url_scraper',
