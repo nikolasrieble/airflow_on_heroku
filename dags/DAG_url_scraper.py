@@ -24,7 +24,7 @@ def url_scraper(language, **context):
                                 MIN_WORD_COUNT=100)
 
         logger.info('Creating tasks for {}'.format(url))
-        tasks = [{'url': article.url} for article in paper.articles]
+        tasks = [{'url': article.url, 'origin': url} for article in paper.articles]
 
         logger.info('Inserting tasks for {}'.format(url))
         database.insert_tasks(tasks, language)
