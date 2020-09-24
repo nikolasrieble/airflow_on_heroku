@@ -47,7 +47,8 @@ class Test(TestCase):
         # given
         mongo_database = MongoDb()
         mongo_database._database = mongomock.MongoClient()["newspaper"]
-        expected_article = {"title": "How Millennials Are Disrupting Test"}
+        expected_article = {"title": "How Millennials Are Disrupting Test",
+                            "url": "www.testytest.com"}
 
         # when
         mongo_database.insert_article(expected_article, "LANGUAGE")
@@ -60,7 +61,8 @@ class Test(TestCase):
         # given
         mongo_database = MongoDb()
         mongo_database._database = mongomock.MongoClient()["newspaper"]
-        existing_article = {"title": "How Millennials Are Disrupting Test"}
+        existing_article = {"title": "How Millennials Are Disrupting Test",
+                            "url": "www.testytest.com"}
         existing_article["_id"] = mongo_database._database["newspaper"]["LANGUAGE"].insert_one(
             existing_article).inserted_id
 
@@ -129,5 +131,5 @@ class Test(TestCase):
         # then
         total = [i for i in mongo_database._database["tr"].find({'url': 'www.bike.com'})]
 
-        assert total[0]["text"] == "this article is scraped"
+        assert total[0]["text"] == "This article is scraped"
         assert len(total) == 1
