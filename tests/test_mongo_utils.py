@@ -13,7 +13,7 @@ class Test(TestCase):
         mongo_database._database = mongomock.MongoClient()["newspaper"]
 
         # when
-        task = mongo_database.get_open_task()
+        task = mongo_database.get_open_task('tr')
 
         # then
         assert task is None
@@ -22,10 +22,10 @@ class Test(TestCase):
         # given
         mongo_database = MongoDb()
         mongo_database._database = mongomock.MongoClient()["newspaper"]
-        mongo_database._database["TODO"].insert_one({"scraped": 1, "id": 1})
+        mongo_database._database["tr"].insert_one({"text": "This article is scraped"})
 
         # when
-        task = mongo_database.get_open_task()
+        task = mongo_database.get_open_task("tr")
 
         # then
         assert task is None
@@ -34,11 +34,11 @@ class Test(TestCase):
         # given
         mongo_database = MongoDb()
         mongo_database._database = mongomock.MongoClient()["newspaper"]
-        open_task = {"scraped": 0, "id": 1}
-        open_task['_id'] = mongo_database._database["TODO"].insert_one(open_task).inserted_id
+        open_task = {"url": "www.opentask.com"}
+        open_task['_id'] = mongo_database._database["de"].insert_one(open_task).inserted_id
 
         # when
-        task = mongo_database.get_open_task()
+        task = mongo_database.get_open_task("de")
 
         # then
         assert task == open_task
@@ -71,29 +71,14 @@ class Test(TestCase):
         article_count = mongo_database._database["newspaper"]["LANGUAGE"].count_documents({})
         assert article_count == 1
 
-    def test_set_task_solved(self):
-        # given
-        mongo_database = MongoDb()
-        mongo_database._database = mongomock.MongoClient()["newspaper"]
-        open_task = {"scraped": 0, "url": "www.google.com"}
-        open_task['_id'] = mongo_database._database["TODO"].insert_one(open_task).inserted_id
-
-        # when
-        mongo_database.set_task_solved(open_task)
-
-        # then
-        actual_task = mongo_database._database["TODO"].find_one({"url": "www.google.com"})
-        assert actual_task["url"] == open_task["url"]
-        assert actual_task["scraped"] == 1
-
     def test_get_target_url(self):
         # given
         mongo_database = MongoDb()
         mongo_database._database = mongomock.MongoClient()["newspaper"]
         target_1 = {'language': 'de', 'url': 'www.news1.de'}
         mongo_database._database["TARGET"].insert_one(target_1)
-        target_1 = {'language': 'de', 'url': 'www.news2.de'}
-        mongo_database._database["TARGET"].insert_one(target_1)
+        target_2 = {'language': 'de', 'url': 'www.news2.de'}
+        mongo_database._database["TARGET"].insert_one(target_2)
 
         # when
         targets = mongo_database.get_target_urls('de')
@@ -116,18 +101,15 @@ class Test(TestCase):
         mongo_database = MongoDb()
         mongo_database._database = mongomock.MongoClient()["newspaper"]
 
-        mongo_database._database["TODO"].insert_one({'url': 'www.bike.com',
-                                                     'scraped': 1,
-                                                     'language': 'tr'})
+        mongo_database._database["tr"].insert_one({'url': 'www.bike.com',
+                                                   'text': "this article is scraped",
+                                                   'language': 'tr'})
         # when
-        mongo_database.insert_tasks([
-            {'url': 'www.bike.com',
-             'scraped': 0,
-             'language': 'tr'}
-        ])
+        mongo_database.insert_tasks([{'url': 'www.bike.com', 'language': 'tr'}],
+                                    "tr")
 
         # then
-        total = [i for i in mongo_database._database["TODO"].find({'url': 'www.bike.com'})]
+        total = [i for i in mongo_database._database["tr"].find({'url': 'www.bike.com'})]
 
-        assert total[0]["scraped"] == 1
-        assert total == 1
+        assert total[0]["text"] == "this article is scraped"
+        assert len(total) == 1
