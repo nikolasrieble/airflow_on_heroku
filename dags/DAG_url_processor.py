@@ -12,24 +12,21 @@ from mongo_utils import MongoDb
 logger = logging.getLogger("airflow.task")
 
 
-def url_processor(**context):
+def url_processor(language, **context):
     database = MongoDb()
-    target = database.get_open_task()
+    target = database.get_open_task(language)
 
     if target is None:
         logger.info('No task left')
 
     else:
         url = target["url"]
+
         logger.info('Extracting data from {}'.format(url))
         data = extract_data(url)
 
-        if data is None:
-            logger.info('No data could be extracted from {}'.format(url))
-        else:
-            logger.info('Upserting data for {}'.format(data["title"]))
-            database.insert_article(data, language=target["language"])
-        database.set_task_solved(target)
+        logger.info('Upserting data for {}'.format(data["title"]))
+        database.insert_article(data, language=target["language"])
 
 
 def extract_data(url):
@@ -43,16 +40,20 @@ def extract_data(url):
             'text': article.text,
             'authors': list(article.authors),
             'title': article.title,
-            'url': article.url,
+            'url': url,
             'tags': list(article.tags),
             'fetched_at': datetime.datetime.now()
         }
     except ArticleException:
-        print('article could not be scraped from url {}'.format(url))
-        return None
+        logger.info('No data could be extracted from {}'.format(url))
+        return {
+            'url': url,
+            'text': "Could not be fetched"
+        }
 
 
-dag = DAG('url_processor',
+default_args["start_date"] = datetime.datetime(2020, 9, 1, 0, 0, 0)
+dag = DAG('de_url_processor',
           schedule_interval='* * * * *',
           description='Scrape website for newspaper',
           default_args=default_args,
@@ -60,5 +61,19 @@ dag = DAG('url_processor',
           )
 
 with dag:
-    processor = PythonOperator(task_id='url_processor_operator',
-                               python_callable=url_processor)
+    processor = PythonOperator(task_id='de_url_processor_operator',
+                               python_callable=url_processor,
+                               op_kwargs={'language': 'de'})
+
+default_args["start_date"] = datetime.datetime(2020, 9, 1, 0, 0, 30)
+dag = DAG('tr_url_processor',
+          schedule_interval='* * * * *',
+          description='Scrape website for newspaper',
+          default_args=default_args,
+          catchup=False,
+          )
+
+with dag:
+    processor = PythonOperator(task_id='tr_url_processor_operator',
+                               python_callable=url_processor,
+                               op_kwargs={'language': 'tr'})
