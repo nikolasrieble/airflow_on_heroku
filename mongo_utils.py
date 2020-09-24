@@ -10,7 +10,7 @@ class MongoDb:
 
     def insert_article(self, data: dict, language):
         collection = self._database[language]
-        collection.update_one(data, {"$set": data}, upsert=True)
+        collection.update_one({"url": data["url"]}, {"$set": data}, upsert=True)
 
     def insert_tasks(self, tasks, language):
         collection = self._database[language]
