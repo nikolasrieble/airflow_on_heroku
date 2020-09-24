@@ -52,19 +52,6 @@ def extract_data(url):
         }
 
 
-default_args["start_date"] = datetime.datetime(2020, 9, 1, 0, 0, 0)
-dag = DAG('de_url_processor',
-          schedule_interval='* * * * *',
-          description='Scrape website for newspaper',
-          default_args=default_args,
-          catchup=False,
-          )
-
-with dag:
-    processor = PythonOperator(task_id='de_url_processor_operator',
-                               python_callable=url_processor,
-                               op_kwargs={'language': 'de'})
-
 default_args["start_date"] = datetime.datetime(2020, 9, 1, 0, 0, 30)
 dag = DAG('tr_url_processor',
           schedule_interval='* * * * *',
