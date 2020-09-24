@@ -27,6 +27,3 @@ class MongoDb:
         if result.count() == 0:
             return []
         return [i['url'] for i in result]
-
-    def _get_task_collection(self):
-        return self._database['TODO']
