@@ -26,7 +26,7 @@ def url_processor(language, **context):
         data = extract_data(url)
 
         logger.info('Upserting data for {}'.format(data["title"]))
-        database.insert_article(data, language=target["language"])
+        database.insert_article(data, language=language)
 
 
 def extract_data(url):
