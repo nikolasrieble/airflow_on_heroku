@@ -30,6 +30,18 @@ def url_processor(language, **context):
         database.insert_article(data, language=language)
 
 
+def extract_date(article_obj, url):
+    try:
+        published_at = datetime.datetime.strptime(article_obj.publish_date, '%Y-%m-%d')
+    except ValueError:
+        try:
+            published_at = datetime.datetime.strptime(find_date(url), '%Y-%m-%d')
+        except ValueError:
+            published_at = None
+
+    return published_at
+
+
 def extract_data(url):
     try:
         article = Article(url)
@@ -37,7 +49,7 @@ def extract_data(url):
         article.parse()
 
         return {
-            'published_at': article.publish_date or find_date(url),
+            'published_at': extract_date(article, url),
             'text': article.text,
             'authors': list(article.authors),
             'title': article.title,
@@ -62,11 +74,11 @@ def create_dynamic_dag(dag_obj, language):
     return dag_obj
 
 
-default_args["start_date"] = datetime.datetime(2020, 9, 1, 0, 0, 0)
-
 LANGUAGES = ['de', 'tr']
-for language in LANGUAGES:
+START_DATES = [datetime.datetime(2020, 9, 1, 0, 0, 0), datetime.datetime(2020, 9, 1, 0, 0, 30)]
+for language, start_date in zip(LANGUAGES, START_DATES):
     dag_id = f'{language}_url_processor'
+    default_args["start_date"] = start_date
     dag = DAG(dag_id,
               schedule_interval='* * * * *',
               description='Scrape website for newspaper',
