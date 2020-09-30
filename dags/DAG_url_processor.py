@@ -30,15 +30,9 @@ def url_processor(language, **context):
         database.insert_article(data, language=language)
 
 
-def extract_date(article_obj, url):
-    try:
-        published_at = datetime.datetime.strptime(article_obj.publish_date, '%Y-%m-%d')
-    except ValueError:
-        try:
-            published_at = datetime.datetime.strptime(find_date(url), '%Y-%m-%d')
-        except ValueError:
-            published_at = None
-
+def extract_date(published_at, url):
+    if not isinstance(published_at, datetime.datetime):
+        published_at = find_date(url)
     return published_at
 
 
@@ -49,7 +43,7 @@ def extract_data(url):
         article.parse()
 
         return {
-            'published_at': extract_date(article, url),
+            'published_at': extract_date(article.publish_date, url),
             'text': article.text,
             'authors': list(article.authors),
             'title': article.title,
