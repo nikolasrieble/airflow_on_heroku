@@ -24,7 +24,7 @@ Step 1 is only required if you wish to run the scraping dags. If you instead pre
 
 1) Implement your dags in the dags folder 
 2) Push your changes to master
-3) `git push heroku master`
+3) `git push heroku master` or `git push heroku subbranchname:master`
 
 ------------
 
