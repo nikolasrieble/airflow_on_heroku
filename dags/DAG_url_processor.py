@@ -33,6 +33,12 @@ def url_processor(language, **context):
 def extract_date(published_at, url):
     if not isinstance(published_at, datetime.datetime):
         published_at = find_date(url)
+        if published_at:
+            try:
+                published_at = datetime.datetime.strptime(url, '%Y-%m-%d')
+            except ValueError:
+                published_at = None
+
     return published_at
 
 
@@ -55,7 +61,8 @@ def extract_data(url):
         logger.info('No data could be extracted from {}'.format(url))
         return {
             'url': url,
-            'text': "Could not be fetched"
+            'text': "Could not be fetched",
+            'fetched': False,
         }
 
 
