@@ -1,12 +1,16 @@
 import os
 import pymongo
 
+CONNECTION_STRING = 'MONGO_DB'
+DB_NAME = 'newspaper'
+TARGET_COLLECTION = 'TARGET'
+
 
 class MongoDb:
 
     def __init__(self):
-        mongodb_string = os.environ.get('MONGO_DB')
-        self._database = pymongo.MongoClient(mongodb_string)['newspaper']
+        mongodb_string = os.environ.get(CONNECTION_STRING)
+        self._database = pymongo.MongoClient(mongodb_string)[DB_NAME]
 
     def insert_article(self, data: dict, language):
         collection = self._database[language]
@@ -22,7 +26,7 @@ class MongoDb:
         return collection.find_one({"text": {"$exists": False}})
 
     def get_target_urls(self, language):
-        collection = self._database["TARGET"]
+        collection = self._database[TARGET_COLLECTION]
         result = collection.find({'language': language})
         if result.count() == 0:
             return []
