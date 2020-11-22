@@ -57,7 +57,7 @@ def extract_data(url):
             'tags': list(article.tags),
             'fetched_at': datetime.datetime.now()
         }
-    except ArticleException:
+    except Exception:
         logger.info('No data could be extracted from {}'.format(url))
         return {
             'url': url,
