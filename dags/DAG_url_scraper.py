@@ -17,7 +17,7 @@ USERNAME = os.environ['SERVER_USERNAME']
 PASSWORD = os.environ['SERVER_PASSWORD']
 
 ssh_hook = SSHHook(
-    ssh_conn_id='SERVER_ssh_connector',
+    # ssh_conn_id='SERVER_ssh_connector',
     keepalive_interval=60,
     username=USERNAME,
     password=PASSWORD
