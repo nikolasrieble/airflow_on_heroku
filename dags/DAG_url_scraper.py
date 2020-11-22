@@ -19,6 +19,7 @@ PASSWORD = os.environ['SERVER_PASSWORD']
 
 ssh_hook = SSHHook(
     # ssh_conn_id='SERVER_ssh_connector',
+    remote_host=REMOTE_BIND_IP,
     keepalive_interval=60,
     username=USERNAME,
     password=PASSWORD
@@ -58,6 +59,7 @@ dag = DAG('url_scraper',
 
 with dag:
     ssh_operator = SSHOperator(
+        remote_host=REMOTE_BIND_IP,
         ssh_hook=ssh_hook,
         task_id='open_tunnel_to_SERVER',
         command='ls -al',
