@@ -1,8 +1,10 @@
 import logging
 
 import newspaper
+import os
 from airflow.models import DAG
 from airflow.operators.python_operator import PythonOperator
+from airflow.contrib.hooks.ssh_hook import SSHHook
 
 from default import default_args
 from mongo_utils import MongoDb
