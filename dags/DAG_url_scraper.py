@@ -8,11 +8,11 @@ from default import default_args
 from mongo_utils import MongoDb
 
 logger = logging.getLogger("airflow.task")
-REMOTE_BIND_IP = Variable.get('SERVER_REMOTE_BIND_IP')
-REMOTE_BIND_PORT = Variable.get('SERVER_REMOTE_BIND_PORT')
-LOCAL_BIND_PORT = Variable.get('SERVER_LOCAL_BIND_PORT')
-USERNAME = Variable.get('SERVER_USERNAME')
-PASSWORD = Variable.get('SERVER_PASSWORD')
+REMOTE_BIND_IP = os.environ['SERVER_REMOTE_BIND_IP']
+REMOTE_BIND_PORT = os.environ['SERVER_REMOTE_BIND_PORT']
+LOCAL_BIND_PORT = os.environ['SERVER_LOCAL_BIND_PORT']
+USERNAME = os.environ['SERVER_USERNAME']
+PASSWORD = os.environ['SERVER_PASSWORD']
 
 ssh_hook = SSHHook(
     ssh_conn_id='SERVER_ssh_connector',

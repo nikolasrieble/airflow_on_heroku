@@ -1,5 +1,6 @@
 import datetime
 import logging
+import os
 
 from airflow.models import DAG
 from airflow.operators.python_operator import PythonOperator
@@ -67,11 +68,11 @@ def extract_data(url):
 
 LANGUAGES = ['de', 'tr']
 START_DATES = [datetime.datetime(2020, 9, 1, 0, 0, 0), datetime.datetime(2020, 9, 1, 0, 0, 30)]
-REMOTE_BIND_IP = Variable.get('SERVER_REMOTE_BIND_IP')
-REMOTE_BIND_PORT = Variable.get('SERVER_REMOTE_BIND_PORT')
-LOCAL_BIND_PORT = Variable.get('SERVER_LOCAL_BIND_PORT')
-USERNAME = Variable.get('SERVER_USERNAME')
-PASSWORD = Variable.get('SERVER_PASSWORD')
+REMOTE_BIND_IP = os.environ['SERVER_REMOTE_BIND_IP']
+REMOTE_BIND_PORT = os.environ['SERVER_REMOTE_BIND_PORT']
+LOCAL_BIND_PORT = os.environ['SERVER_LOCAL_BIND_PORT']
+USERNAME = os.environ['SERVER_USERNAME']
+PASSWORD = os.environ['SERVER_PASSWORD']
 
 ssh_hook = SSHHook(
     ssh_conn_id='SERVER_ssh_connector',
