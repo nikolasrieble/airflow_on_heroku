@@ -2,9 +2,9 @@ import datetime
 import logging
 import os
 
+from airflow.contrib.hooks.ssh_hook import SSHHook
 from airflow.models import DAG
 from airflow.operators.python_operator import PythonOperator
-from airflow.contrib.hooks.ssh_hook import SSHHook
 from default import default_args
 from htmldate import find_date
 from mongo_utils import MongoDb
