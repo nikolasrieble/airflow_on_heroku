@@ -3,6 +3,7 @@ import logging
 import os
 
 from airflow.contrib.hooks.ssh_hook import SSHHook
+from airflow.contrib.operators.ssh_operator import SSHOperator
 from airflow.models import DAG
 from airflow.operators.python_operator import PythonOperator
 from default import default_args
