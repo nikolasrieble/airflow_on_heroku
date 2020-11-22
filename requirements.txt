@@ -103,3 +103,4 @@ psycopg2==2.8.6
 flask_bcrypt==0.7.1
 htmldate
 paramiko
+sshtunnel
