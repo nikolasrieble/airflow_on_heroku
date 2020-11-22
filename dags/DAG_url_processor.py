@@ -3,12 +3,11 @@ import logging
 
 from airflow.models import DAG
 from airflow.operators.python_operator import PythonOperator
+from default import default_args
+from htmldate import find_date
+from mongo_utils import MongoDb
 from newspaper import Article
 from newspaper import ArticleException
-from htmldate import find_date
-
-from default import default_args
-from mongo_utils import MongoDb
 
 logger = logging.getLogger("airflow.task")
 
@@ -66,17 +65,44 @@ def extract_data(url):
         }
 
 
+LANGUAGES = ['de', 'tr']
+START_DATES = [datetime.datetime(2020, 9, 1, 0, 0, 0), datetime.datetime(2020, 9, 1, 0, 0, 30)]
+REMOTE_BIND_IP = Variable.get('SERVER_REMOTE_BIND_IP')
+REMOTE_BIND_PORT = Variable.get('SERVER_REMOTE_BIND_PORT')
+LOCAL_BIND_PORT = Variable.get('SERVER_LOCAL_BIND_PORT')
+USERNAME = Variable.get('SERVER_USERNAME')
+PASSWORD = Variable.get('SERVER_PASSWORD')
+
+ssh_hook = SSHHook(
+    ssh_conn_id='SERVER_ssh_connector',
+    keepalive_interval=60,
+    username=USERNAME,
+    password=PASSWORD
+).get_tunnel(
+    int(REMOTE_BIND_PORT),
+    remote_host=REMOTE_BIND_IP,
+    local_port=int(LOCAL_BIND_PORT)
+).start()
+
+
 def create_dynamic_dag(dag_obj, language):
     with dag_obj:
-        processor = PythonOperator(task_id='de_url_processor_operator',
-                                   python_callable=url_processor,
-                                   op_kwargs={'language': language})
+        ssh_operator = SSHOperator(
+            ssh_hook=ssh_hook,
+            task_id='open_tunnel_to_SERVER',
+            command='ls -al',
+            dag=dag_obj
+        )
+        processor = PythonOperator(
+            task_id='de_url_processor_operator',
+            python_callable=url_processor,
+            op_kwargs={'language': language}
+        )
+        processor.set_upstream(ssh_operator)
 
     return dag_obj
 
 
-LANGUAGES = ['de', 'tr']
-START_DATES = [datetime.datetime(2020, 9, 1, 0, 0, 0), datetime.datetime(2020, 9, 1, 0, 0, 30)]
 for language, start_date in zip(LANGUAGES, START_DATES):
     dag_id = f'{language}_url_processor'
     default_args["start_date"] = start_date
