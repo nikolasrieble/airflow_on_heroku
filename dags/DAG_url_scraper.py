@@ -10,6 +10,18 @@ from mongo_utils import MongoDb
 logger = logging.getLogger("airflow.task")
 
 
+def get_clean_urls(raw_urls):
+    cleaned_urls = []
+    for url in raw_urls:
+        # Removing same html links with anchors
+        if '#' in url:
+            continue
+        url = url.replace('http:', 'https:')
+        cleaned_urls.append(url)
+
+    return cleaned_urls
+
+
 def url_scraper(language, **context):
     database = MongoDb()
 
@@ -24,7 +36,10 @@ def url_scraper(language, **context):
                                 MIN_WORD_COUNT=100)
 
         logger.info('Creating tasks for {}'.format(url))
-        tasks = [{'url': article.url, 'origin': url} for article in paper.articles]
+
+        raw_urls = [article.url for article in paper.articles]
+        cleaned_urls = get_clean_urls(raw_urls)
+        tasks = [{'url': cleaned_url, 'origin': url} for cleaned_url in cleaned_urls]
 
         logger.info('Inserting tasks for {}'.format(url))
         database.insert_tasks(tasks, language)
