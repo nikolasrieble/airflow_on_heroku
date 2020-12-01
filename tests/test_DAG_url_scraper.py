@@ -13,11 +13,11 @@ class Test(TestCase):
 
         expected_cleaned_urls = [
             'https://www.test.de/test_1',
-            'https://www.test.de/test_1',
+            'https://www.test.de/test_2'
         ]
 
         computed_cleaned_urls = get_clean_urls(raw_urls)
-
+        print(computed_cleaned_urls)
         assert computed_cleaned_urls == expected_cleaned_urls
 
     def test_http_and_https_articles_result_in_only_one_target(self):
@@ -26,6 +26,7 @@ class Test(TestCase):
             'https://www.test.de/test_1'
         ]
         cleaned_urls = get_clean_urls(raw_urls)
+        print(cleaned_urls)
         assert cleaned_urls == ['https://www.test.de/test_1']
 
 
@@ -35,7 +36,8 @@ class Test(TestCase):
             'http://www.test.de/test_2#anchor',
         ]
         cleaned_urls = get_clean_urls(raw_urls)
-        assert cleaned_urls == ['http://www.test.de/test_2']
+        print(cleaned_urls)
+        assert cleaned_urls == ['https://www.test.de/test_2']
 
     def test_duplicate_is_ignored(self):
         raw_urls = [
@@ -43,12 +45,14 @@ class Test(TestCase):
             'http://www.test.de/test_2'
         ]
         cleaned_urls = get_clean_urls(raw_urls)
-        assert cleaned_urls == ['http://www.test.de/test_2']
+        print(cleaned_urls)
+        assert cleaned_urls == ['https://www.test.de/test_2']
 
     def test_anchor_is_removed(self):
         raw_urls = [
             'http://www.test.de/test_2#ANCHOR'
         ]
         cleaned_urls = get_clean_urls(raw_urls)
-        assert cleaned_urls == ['http://www.test.de/test_2']
+        print(cleaned_urls)
+        assert cleaned_urls == ['https://www.test.de/test_2']
 

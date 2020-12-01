@@ -15,11 +15,13 @@ def get_clean_urls(raw_urls):
     for url in raw_urls:
         # Removing same html links with anchors
         if '#' in url:
-            continue
+            url = url.split('#')[0]
+
         url = url.replace('http:', 'https:')
+
         cleaned_urls.append(url)
 
-    return cleaned_urls
+    return list(set(cleaned_urls))
 
 
 def url_scraper(language, **context):
