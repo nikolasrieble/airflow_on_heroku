@@ -1,10 +1,9 @@
 from unittest import TestCase
 from dags.DAG_url_scraper import get_clean_urls
-import mongomock as mongomock
-from mongo_utils import MongoDb
 
 
 class Test(TestCase):
+
     def test_get_clean_tasks(self):
         raw_urls = [
             'http://www.test.de/test_1',
@@ -21,23 +20,35 @@ class Test(TestCase):
 
         assert computed_cleaned_urls == expected_cleaned_urls
 
-    def test_only_one_article_inserted(self):
-        origin_url = 'www.test.de'
+    def test_http_and_https_articles_result_in_only_one_target(self):
         raw_urls = [
             'http://www.test.de/test_1',
-            'https://www.test.de/test_1',
+            'https://www.test.de/test_1'
+        ]
+        cleaned_urls = get_clean_urls(raw_urls)
+        assert cleaned_urls == ['https://www.test.de/test_1']
+
+
+    def test_anchors_are_removed_from_target(self):
+        raw_urls = [
             'http://www.test.de/test_2',
             'http://www.test.de/test_2#anchor',
         ]
         cleaned_urls = get_clean_urls(raw_urls)
-        tasks = [{'url': cleaned_url, 'origin': origin_url} for cleaned_url in cleaned_urls]
+        assert cleaned_urls == ['http://www.test.de/test_2']
 
-        mongo_database = MongoDb()
-        mongo_database._database = mongomock.MongoClient()["newspaper"]
+    def test_duplicate_is_ignored(self):
+        raw_urls = [
+            'http://www.test.de/test_2',
+            'http://www.test.de/test_2'
+        ]
+        cleaned_urls = get_clean_urls(raw_urls)
+        assert cleaned_urls == ['http://www.test.de/test_2']
 
-        # when
-        mongo_database.insert_tasks(tasks, "LANGUAGE")
+    def test_anchor_is_removed(self):
+        raw_urls = [
+            'http://www.test.de/test_2#ANCHOR'
+        ]
+        cleaned_urls = get_clean_urls(raw_urls)
+        assert cleaned_urls == ['http://www.test.de/test_2']
 
-        # then
-        article_count = mongo_database._database["newspaper"]["LANGUAGE"].count_documents({})
-        assert article_count == 2
