@@ -11,13 +11,24 @@ logger = logging.getLogger("airflow.task")
 
 
 def get_clean_urls(raw_urls):
+    """
+    Known problems so far:
+    https vs http
+    https://www.test.de vs https://test.de
+    https://www.test.de/something vs https://www.test.de/something#something
+    https://www.test.de/something.html vs https://www.test.de/something.html?something
+    """
     cleaned_urls = []
     for url in raw_urls:
-        # Removing same html links with anchors
-        if '#' in url:
-            url = url.split('#')[0]
+        # Removing same html links with anchors (#) or question mark (?)
+        url = url.split('#')[0].split('?')[0]
 
+        # http vs https
         url = url.replace('http:', 'https:')
+
+        # www
+        if 'www' not in url[:12]:
+            url = url.replace('https://', 'https://www.')
 
         cleaned_urls.append(url)
 
