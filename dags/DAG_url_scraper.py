@@ -10,6 +10,31 @@ from mongo_utils import MongoDb
 logger = logging.getLogger("airflow.task")
 
 
+def get_clean_urls(raw_urls):
+    """
+    Known problems so far:
+    https vs http
+    https://www.test.de vs https://test.de
+    https://www.test.de/something vs https://www.test.de/something#something
+    https://www.test.de/something.html vs https://www.test.de/something.html?something
+    """
+    cleaned_urls = []
+    for url in raw_urls:
+        # Removing same html links with anchors (#) or question mark (?)
+        url = url.split('#')[0].split('?')[0]
+
+        # http vs https
+        url = url.replace('http:', 'https:')
+
+        # www
+        if 'www' not in url[:12]:
+            url = url.replace('https://', 'https://www.')
+
+        cleaned_urls.append(url)
+
+    return list(set(cleaned_urls))
+
+
 def url_scraper(language, **context):
     database = MongoDb()
 
@@ -24,7 +49,10 @@ def url_scraper(language, **context):
                                 MIN_WORD_COUNT=100)
 
         logger.info('Creating tasks for {}'.format(url))
-        tasks = [{'url': article.url, 'origin': url} for article in paper.articles]
+
+        raw_urls = [article.url for article in paper.articles]
+        cleaned_urls = get_clean_urls(raw_urls)
+        tasks = [{'url': cleaned_url, 'origin': url} for cleaned_url in cleaned_urls]
 
         logger.info('Inserting tasks for {}'.format(url))
         database.insert_tasks(tasks, language)
